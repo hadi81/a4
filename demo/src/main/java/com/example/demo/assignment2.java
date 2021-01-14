@@ -2,6 +2,7 @@ package com.example.demo;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -713,8 +714,9 @@ public class assignment2 extends JFrame {
     
     public static void main(String[] args) {
 
-        SpringApplicationBuilder ctx = new SpringApplicationBuilder(assignment2.class)
-                .headless(false).run(args);
+        SpringApplicationBuilder builder  = new SpringApplicationBuilder(assignment2.class);
+        builder.headless(false);
+        ConfigurableApplicationContext ctx = builder.run(args);
 
         EventQueue.invokeLater(() -> {
 
