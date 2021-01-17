@@ -11,15 +11,30 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.TransferHandler;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetAdapter;
+import java.awt.dnd.DropTargetDropEvent;
+import java.io.IOException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.net.URL;
+import javax.swing.border.TitledBorder;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.awt.*;
 import javax.swing.*;
@@ -67,7 +82,8 @@ public class assignment2 extends JFrame {
 		try {
             File myObj = new File("src/main/java/com/example/demo/duck.txt");
             Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
+            while (myReader.hasNextLine()) 
+            {
               String data = myReader.nextLine();
               if(data.equalsIgnoreCase("mallard")==true)
                icon3 = new ImageIcon("src/main/java/com/example/demo/mallard_duck.png");
@@ -76,12 +92,12 @@ public class assignment2 extends JFrame {
               if(data.equalsIgnoreCase("redhead")==true)
                icon2 = new ImageIcon("src/main/java/com/example/demo/redhead_duck.png");
                if(data.equalsIgnoreCase("grid")==true)
-               icon4 = new ImageIcon("src/main/java/com/example/demo/grid.png");
-                
-
+                icon4 = new ImageIcon("src/main/java/com/example/demo/grid.png");
             }
             myReader.close();
-          } catch (FileNotFoundException e) {
+          } 
+          catch (FileNotFoundException e) 
+          {
             System.out.println("An error occurred.");
             e.printStackTrace();
           }
@@ -154,10 +170,10 @@ public class assignment2 extends JFrame {
         /* Adding Mouse Listener for Drag and Drop Functionality */
 
         MouseAdapter listener = new DragMouseAdapter();
-        label1.addMouseListener(listener);
-        label2.addMouseListener(listener);
-        label3.addMouseListener(listener);
-        label4.addMouseListener(listener);
+        // label1.addMouseListener(listener);
+        // label2.addMouseListener(listener);
+        // label3.addMouseListener(listener);
+        // label4.addMouseListener(listener);
         Frame frame = new JFrame();
         /* Buttons for creating 2x2 Grid */
 
@@ -629,14 +645,31 @@ public class assignment2 extends JFrame {
 
         });        
         /* Drag and Drop Transfer Handler */
-        label1.setTransferHandler(new TransferHandler("icon"));
-        label2.setTransferHandler(new TransferHandler("icon"));
-        label3.setTransferHandler(new TransferHandler("icon"));
-        label4.setTransferHandler(new TransferHandler("icon"));
-        b1.setTransferHandler(new TransferHandler("icon"));
-        b2.setTransferHandler(new TransferHandler("icon"));
-        b3.setTransferHandler(new TransferHandler("icon"));
-        b4.setTransferHandler(new TransferHandler("icon"));
+        // label1.setTransferHandler(new TransferHandler("icon"));
+        // label2.setTransferHandler(new TransferHandler("icon"));
+        // label3.setTransferHandler(new TransferHandler("icon"));
+        // label4.setTransferHandler(new TransferHandler("icon"));
+        // b1.setTransferHandler(new TransferHandler("icon"));
+        // b2.setTransferHandler(new TransferHandler("icon"));
+        // b3.setTransferHandler(new TransferHandler("icon"));
+        // b4.setTransferHandler(new TransferHandler("icon"));
+        MyDragGestureListener dlistener1 = new MyDragGestureListener();
+        DragSource ds1 = new DragSource();
+        ds1.createDefaultDragGestureRecognizer(label1, DnDConstants.ACTION_COPY, dlistener1);
+
+        MyDragGestureListener dlistener2 = new MyDragGestureListener();
+        DragSource ds2 = new DragSource();
+        ds2.createDefaultDragGestureRecognizer(label2, DnDConstants.ACTION_COPY, dlistener2);
+
+
+        MyDragGestureListener dlistener3 = new MyDragGestureListener();
+        DragSource ds3 = new DragSource();
+        ds3.createDefaultDragGestureRecognizer(label3, DnDConstants.ACTION_COPY, dlistener3);
+
+
+        MyDragGestureListener dlistener4 = new MyDragGestureListener();
+        DragSource ds4 = new DragSource();
+        ds4.createDefaultDragGestureRecognizer(label4, DnDConstants.ACTION_COPY, dlistener4);
 
         /* creating GUI layout*/
 
@@ -664,6 +697,7 @@ public class assignment2 extends JFrame {
 		canvasPanel.add(canvasLabel);
         canvasPanel.setBackground(Color.white);
         canvasPanel.setPreferredSize(new Dimension (400, 700));
+        new MyDropTargetListener(canvasPanel);
 
 
         
@@ -724,4 +758,128 @@ public class assignment2 extends JFrame {
 			ex.setVisible(true);
         });
     }
+
+public   class MyDropTargetListener extends DropTargetAdapter 
+{
+
+    private DropTarget dropTarget;
+    private JPanel p;
+
+    public MyDropTargetListener(JPanel panel) 
+	{
+        p = panel;
+        dropTarget = new DropTarget(panel, DnDConstants.ACTION_COPY, this, true, null);
+
+    }
+
+    @Override
+    public void drop(DropTargetDropEvent event) 
+	{
+        try 
+		{
+            DropTarget test = (DropTarget) event.getSource();
+            Component ca = (Component) test.getComponent();
+            Point dropPoint = ca.getMousePosition();
+            Transferable tr = event.getTransferable();
+
+            if (event.isDataFlavorSupported(DataFlavor.imageFlavor)) 
+			{
+                Icon ico = (Icon) tr.getTransferData(DataFlavor.imageFlavor);
+
+                if (ico != null) 
+				{
+
+                    p.add(new JLabel(ico));
+                    p.revalidate();
+                    p.repaint();
+                    event.dropComplete(true);
+                }
+            } else 
+			{
+                event.rejectDrop();
+            }
+        } 
+		catch (Exception e) 
+		{
+            e.printStackTrace();
+            event.rejectDrop();
+        }
+    }
 }
+
+public static class MyDragGestureListener implements DragGestureListener 
+{
+
+    @Override
+    public void dragGestureRecognized(DragGestureEvent event) 
+	{
+        JLabel label = (JLabel) event.getComponent();
+        final Icon ico = label.getIcon();
+
+
+        Transferable transferable = new Transferable() 
+		{
+            @Override
+            public DataFlavor[] getTransferDataFlavors() 
+			{
+                return new DataFlavor[]{DataFlavor.imageFlavor};
+            }
+
+            @Override
+            public boolean isDataFlavorSupported(DataFlavor flavor) 
+			{
+                if (!isDataFlavorSupported(flavor)) 
+				{
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException 
+			{
+                return ico;
+            }
+        };
+        event.startDrag(null, transferable);
+    }
+}
+}
+
+// public interface PaletteIcon 
+// {
+//     public void op();
+// }
+
+// public class DuckIcon extends ImageIcon implements PaletteIcon
+// {
+//     public void op()
+//     {
+//         //do nothing
+//     }
+// }
+
+// public class GridIcon extends JPanel throws Exception
+// {
+//     // private List<PaletteIcon> icons = new ArrayList<PaletteIcon>();
+//     //new MyDropTargetListener(this);
+
+
+//     JLabel label1 = new JLabel(new ImageIcon(new URL("http://i.stack.imgur.com/gJmeJ.png")));
+//     JLabel label2 = new JLabel(new ImageIcon(new URL("http://i.stack.imgur.com/8BGfi.png")));
+//     JLabel label3 = new JLabel(new ImageIcon(new URL("http://i.stack.imgur.com/1lgtq.png")));
+
+//     public GridIcon()
+//     {
+//         this.setLayout(new FlowLayout(2, 4, 4));
+//         this.add(label1);
+//         this.add(label2);
+//         this.add(label3);
+//     }
+//     // public void op()
+//     // {
+//     //     //do nothing
+//     // }
+// }
+
+// }
